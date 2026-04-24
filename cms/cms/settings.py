@@ -23,10 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-1mgv3bbz3xj9s8mv=8_y+$+)^wmgoqu+udovt@(np2+qz!-$z6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['erplive.net', 'www.erplive.net', '*']
 
 # Application definition
 
