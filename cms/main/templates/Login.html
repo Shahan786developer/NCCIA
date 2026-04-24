@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCIA – Secure Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --sky-deep: #0284c7;
+            --sky-light: #7dd3fc;
+            --white: #ffffff;
+            --text-dark: #0f172a;
+            --text-mid: #475569;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --input-focus: #0284c7;
+            --error: #ef4444;
+            --success: #22c55e;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f0f9ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Sans', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ── Animated background ── */
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            background: white;
+            z-index: 0;
+        }
+
+        canvas#particles {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ── Card ── */
+        .card {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            width: min(900px, 95vw);
+            min-height: 560px;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow:
+                0 4px 6px rgba(2, 132, 199, .06),
+                0 20px 60px rgba(2, 132, 199, .18),
+                0 0 0 1px rgba(2, 132, 199, .08);
+            animation: cardRise .7s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        @keyframes cardRise {
+            from {
+                opacity: 0;
+                transform: translateY(32px) scale(.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ── Left panel ── */
+        .panel-left {
+            flex: 1;
+            background: linear-gradient(to bottom, #0284c7, #7dd3fc);
+            padding: 48px 36px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        /* decorative circles */
+        .panel-left::before {
+            content: '';
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255, 255, 255, .15);
+            top: -80px;
+            left: -80px;
+            animation: rotateSlow 18s linear infinite;
+        }
+
+        .panel-left::after {
+            content: '';
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255, 255, 255, .1);
+            bottom: -60px;
+            right: -60px;
+            animation: rotateSlow 22s linear infinite reverse;
+        }
+
+        @keyframes rotateSlow {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* logo */
+        .logo-wrap {
+            position: relative;
+            margin-bottom: 28px;
+            animation: fadeDown .6s .2s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .logo-shield {
+            width: 90px;
+            height: 90px;
+            background: rgba(255, 255, 255, .18);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            border: 2px solid rgba(255, 255, 255, .35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .12), inset 0 1px 0 rgba(255, 255, 255, .3);
+        }
+
+        .logo-shield svg {
+            width: 52px;
+            height: 52px;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .2));
+        }
+
+        .logo-ring {
+            position: absolute;
+            inset: -8px;
+            border-radius: 32px;
+            border: 1.5px solid rgba(255, 255, 255, .25);
+            animation: pulsePing 2.4s ease-in-out infinite;
+        }
+
+        @keyframes pulsePing {
+            0%,
+            100% {
+                opacity: .6;
+                transform: scale(1);
+            }
+            50% {
+                opacity: .2;
+                transform: scale(1.06);
+            }
+        }
+
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: .06em;
+            color: #fff;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, .2);
+            text-align: center;
+            animation: fadeDown .6s .3s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .brand-sub {
+            font-size: .72rem;
+            font-weight: 400;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: white;
+            margin-top: 4px;
+            text-align: center;
+            animation: fadeDown .6s .35s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .divider-line {
+            width: 48px;
+            height: 1.5px;
+            background: rgba(255, 255, 255, .4);
+            margin: 22px 0;
+            animation: fadeDown .6s .4s both;
+        }
+
+        .info-list {
+            list-style: none;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .info-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: .85rem;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, .92);
+            animation: fadeDown .5s calc(.45s + var(--i)*.08s) cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .info-list li .icon-dot {
+            width: 28px;
+            height: 28px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, .2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+        }
+
+        .info-list li .icon-dot svg {
+            width: 16px;
+            height: 16px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .contact-strip {
+            margin-top: 28px;
+            padding: 14px 20px;
+            background: rgba(255, 255, 255, .12);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, .2);
+            width: 100%;
+            text-align: center;
+            font-size: .75rem;
+            color: rgba(255, 255, 255, .8);
+            line-height: 1.6;
+            animation: fadeDown .6s .7s both;
+        }
+
+        .contact-strip strong {
+            color: #fff;
+        }
+
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Right panel ── */
+        .panel-right {
+            flex: 1;
+            background: #ffffff;
+            padding: 48px 42px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* subtle animated blobs on white – NO grid lines */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            pointer-events: none;
+            opacity: .35;
+        }
+
+        .blob-1 {
+            width: 200px;
+            height: 200px;
+            background: #bae6fd;
+            top: -60px;
+            right: -60px;
+            animation: blobDrift 8s ease-in-out infinite alternate;
+        }
+
+        .blob-2 {
+            width: 150px;
+            height: 150px;
+            background: #e0f2fe;
+            bottom: -40px;
+            left: -40px;
+            animation: blobDrift 11s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes blobDrift {
+            from {
+                transform: translate(0, 0) scale(1);
+            }
+            to {
+                transform: translate(20px, 15px) scale(1.1);
+            }
+        }
+
+        .form-header {
+            margin-bottom: 32px;
+            animation: fadeUp .6s .25s both;
+        }
+
+        .form-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.65rem;
+            color: var(--text-dark);
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .form-header p {
+            margin-top: 6px;
+            font-size: .83rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            animation: fadeUp .5s calc(.3s + var(--i)*.07s) both;
+        }
+
+        label {
+            display: block;
+            font-size: .75rem;
+            font-weight: 600;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--text-mid);
+            margin-bottom: 7px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap .icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            font-size: 1rem;
+            transition: color .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-wrap .icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.8;
+            transition: stroke .2s;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            border: 1.5px solid var(--border);
+            border-radius: 11px;
+            font-size: .88rem;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            background: #fafcff;
+            transition: border-color .2s, box-shadow .2s, background .2s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--input-focus);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, .1);
+        }
+
+        input:focus~.icon,
+        .input-wrap:focus-within .icon {
+            color: var(--input-focus);
+        }
+
+        input:focus~.icon svg,
+        .input-wrap:focus-within .icon svg {
+            stroke: var(--input-focus);
+        }
+
+        .eye-toggle {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: .95rem;
+            padding: 4px;
+            transition: color .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .eye-toggle:hover {
+            color: var(--sky-deep);
+        }
+
+        .row-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            font-size: .8rem;
+            animation: fadeUp .5s .52s both;
+        }
+
+        .checkbox-wrap {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+            color: var(--text-mid);
+        }
+
+        .checkbox-wrap input[type="checkbox"] {
+            accent-color: var(--sky-deep);
+        }
+
+        .forgot-link {
+            color: var(--sky-deep);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color .2s;
+        }
+
+        .forgot-link:hover {
+            color: #0369a1;
+            text-decoration: underline;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .92rem;
+            font-weight: 600;
+            letter-spacing: .04em;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform .15s, box-shadow .2s;
+            box-shadow: 0 4px 18px rgba(2, 132, 199, .35);
+            animation: fadeUp .5s .58s both;
+        }
+
+        .btn-login::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, .15);
+            transform: translateX(-110%) skewX(-20deg);
+            transition: transform .45s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(2, 132, 199, .45);
+        }
+
+        .btn-login:hover::after {
+            transform: translateX(110%) skewX(-20deg);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .help-text {
+            margin-top: 20px;
+            text-align: center;
+            font-size: .78rem;
+            color: var(--text-muted);
+            animation: fadeUp .5s .63s both;
+        }
+
+        .help-text a {
+            color: var(--sky-deep);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .help-text a:hover {
+            text-decoration: underline;
+        }
+
+        .security-badge {
+            margin-top: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: .72rem;
+            color: var(--text-muted);
+            animation: fadeUp .5s .67s both;
+        }
+
+        .security-badge svg {
+            width: 14px;
+            height: 14px;
+            color: #22c55e;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 680px) {
+            .card {
+                flex-direction: column;
+                width: 96vw;
+                min-height: auto;
+                border-radius: 18px;
+            }
+            .panel-left {
+                padding: 36px 28px;
+            }
+            .info-list {
+                display: none;
+            }
+            .contact-strip {
+                display: none;
+            }
+            .panel-right {
+                padding: 36px 28px;
+            }
+            .brand-name {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-canvas"></div>
+    <canvas id="particles"></canvas>
+
+    <div class="card">
+
+        <!-- LEFT PANEL -->
+        <div class="panel-left">
+
+            <div class="logo-wrap">
+                <div class="logo-shield">
+                    <!-- Shield/emblem SVG logo -->
+                    <svg viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M26 2L4 11V29C4 41.5 13.5 53 26 57C38.5 53 48 41.5 48 29V11L26 2Z"
+                        fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" />
+                        <path d="M26 8L9 15.5V29C9 39 17 48.5 26 52C35 48.5 43 39 43 29V15.5L26 8Z"
+                        fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" stroke-width="1" />
+                        <text x="26" y="35" text-anchor="middle" font-size="13" font-weight="700"
+                        font-family="Playfair Display, serif" fill="white" letter-spacing="0.5">Logo</text>
+                    </svg>
+                </div>
+                <div class="logo-ring"></div>
+            </div>
+
+            <div class="brand-name">NCCIA</div>
+            <div class="brand-sub">National Cyber Crime Investigation Agency</div>
+
+            <div class="divider-line"></div>
+
+            <ul class="info-list">
+                <li style="--i:0">
+                    <span class="icon-dot">
+                        <!-- Lock / Secure Access SVG -->
+                         <span class="icon-dot">
+    <!-- Database & Key SVG - Secure Data Access -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Database cylinder -->
+        <ellipse cx="9" cy="6" rx="5" ry="2" />
+        <path d="M4 6v5c0 1.1 2.24 2 5 2s5-.9 5-2V6" />
+        <path d="M4 11v5c0 1.1 2.24 2 5 2s5-.9 5-2v-5" />
+        <!-- Key -->
+        <circle cx="19" cy="10" r="2.5" />
+        <path d="M19 12.5v3" />
+        <line x1="19" y1="15.5" x2="19" y2="18" />
+        <line x1="17.5" y1="18" x2="20.5" y2="18" />
+        <line x1="17" y1="16" x2="19" y2="16" stroke-width="1.5" opacity="0.6" />
+    </svg>
+</span>
+                    </span>
+                    <span>Secure access to classified intelligence databases and Complain management systems</span>
+                </li>
+                <li style="--i:1">
+                    <span class="icon-dot">
+                        <!-- Shield / Protection SVG -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            <path d="M9 12l2 2 4-4" />
+                        </svg>
+                    </span>
+                    <span>IP address is being monitored for security purposes</span>
+                </li>
+                <li style="--i:2">
+                    <span class="icon-dot">
+                        <!-- Signal / Monitoring SVG -->
+                       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0110 0v4" />
+                            <circle cx="12" cy="16" r="1" />
+                        </svg>
+                    </span>
+                    <span>Unauthorized access is strictly prohibited</span>
+                </li>
+                <li style="--i:3">
+                  <span class="icon-dot">
+    <!-- Elegant Scales of Justice SVG -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Base pedestal -->
+        <path d="M12 20v-4" opacity="0.7" />
+        <line x1="10" y1="20" x2="14" y2="20" stroke-width="2" />
+        <!-- Main pillar -->
+        <line x1="12" y1="4" x2="12" y2="16" stroke-width="2" />
+        <!-- Cross beam -->
+        <line x1="5" y1="8" x2="19" y2="8" stroke-width="1.8" />
+        <!-- Left scale pan -->
+        <path d="M5 8 C3.5 9.5, 3.5 13, 5 14" stroke-width="1.5" />
+        <circle cx="5" cy="11" r="0.8" fill="white" stroke="none" />
+        <!-- Right scale pan -->
+        <path d="M19 8 C20.5 9.5, 20.5 13, 19 14" stroke-width="1.5" />
+        <circle cx="19" cy="11" r="0.8" fill="white" stroke="none" />
+        <!-- Decorative center gem -->
+        <circle cx="12" cy="9.5" r="1.2" fill="white" stroke="white" stroke-width="1" opacity="0.9" />
+    </svg>
+</span>
+
+                    </span>
+                    <span>Confidentiality of the access ID and password is solely the responsibility of the concerned person.</span>
+                </li>
+            </ul>
+
+            <div class="contact-strip">
+                <strong>Helpdesk:</strong> +1 (800) NCIA-HQ<br>
+                <strong>Email:</strong> support@ncia.gov.pk
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="panel-right">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+
+            <div class="form-header">
+                <h2>Welcome Back</h2>
+                <p>Sign in to your NCIA officer account</p>
+            </div>
+
+            <div class="form-group" style="--i:0">
+                <label for="badge">Badge / Officer ID</label>
+                <div class="input-wrap">
+                    <span class="icon">
+                        <!-- Badge / ID Card SVG -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="16" rx="3" />
+                            <circle cx="9" cy="11" r="2" />
+                            <path d="M5 18c0-2.5 2-4 4-4s4 1.5 4 4" />
+                            <line x1="16" y1="10" x2="19" y2="10" />
+                            <line x1="16" y1="13" x2="19" y2="13" />
+                        </svg>
+                    </span>
+                    <input type="text" id="badge" placeholder="e.g. NCIA-2024-001" autocomplete="username">
+                </div>
+            </div>
+
+            <div class="form-group" style="--i:1">
+                <label for="email">Email Address</label>
+                <div class="input-wrap">
+                    <span class="icon">
+                        <!-- Envelope / Email SVG -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="16" rx="2" />
+                            <path d="M22 4L12 13L2 4" />
+                        </svg>
+                    </span>
+                    <input type="email" id="email" placeholder="officer@ncia.gov.pk" autocomplete="email">
+                </div>
+            </div>
+
+            <div class="form-group" style="--i:2">
+                <label for="password">Password</label>
+                <div class="input-wrap">
+                    <span class="icon">
+                        <!-- Lock SVG -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" />
+                            <path d="M7 11V7a5 5 0 0110 0v4" />
+                        </svg>
+                    </span>
+                    <input type="password" id="password" placeholder="••••••••••••" autocomplete="current-password">
+                    <button class="eye-toggle" onclick="togglePwd(this)" type="button" aria-label="Show password">
+                        <svg id="eyeIcon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="row-options">
+                <label class="checkbox-wrap">
+                    <input type="checkbox"> Remember this device
+                </label>
+                <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+
+      <button class="btn-login" onclick="window.location.href='{% url "dashboard" %}'">
+    Sign In to Portal
+</button>
+
+            <p class="help-text">
+                Need access? <a href="#">Request officer credentials</a>
+            </p>
+
+            <div class="security-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                <span>256-bit SSL Encrypted · Secure Government Portal</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* ── Particle canvas ── */
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let W, H, dots = [];
+
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function makeDot() {
+            return {
+                x: Math.random() * W,
+                y: Math.random() * H,
+                r: Math.random() * 2.2 + .5,
+                vx: (Math.random() - .5) * .3,
+                vy: (Math.random() - .5) * .3,
+                a: Math.random() * .5 + .1,
+                color: Math.random() > .5 ? '#0284c7' : '#7dd3fc'
+            };
+        }
+
+        for (let i = 0; i < 70; i++) dots.push(makeDot());
+
+        function animate() {
+            ctx.clearRect(0, 0, W, H);
+            dots.forEach(d => {
+                d.x += d.vx;
+                d.y += d.vy;
+                if (d.x < 0) d.x = W;
+                if (d.x > W) d.x = 0;
+                if (d.y < 0) d.y = H;
+                if (d.y > H) d.y = 0;
+                ctx.beginPath();
+                ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+                ctx.fillStyle = d.color + Math.round(d.a * 255).toString(16).padStart(2, '0');
+                ctx.fill();
+            });
+            // draw faint lines between close dots
+            for (let i = 0; i < dots.length; i++) {
+                for (let j = i + 1; j < dots.length; j++) {
+                    const dx = dots[i].x - dots[j].x;
+                    const dy = dots[i].y - dots[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 90) {
+                        ctx.beginPath();
+                        ctx.moveTo(dots[i].x, dots[i].y);
+                        ctx.lineTo(dots[j].x, dots[j].y);
+                        ctx.strokeStyle = `rgba(2,132,199,${.08*(1-dist/90)})`;
+                        ctx.lineWidth = .7;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        /* ── Password toggle ── */
+        function togglePwd(btn) {
+            const inp = document.getElementById('password');
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+        }
+
+        /* ── Login handler ── */
+        function handleLogin() {
+            const btn = document.querySelector('.btn-login');
+            btn.textContent = 'Authenticating…';
+            btn.style.opacity = '.8';
+            btn.style.pointerEvents = 'none';
+            setTimeout(() => {
+                btn.textContent = '✓ Access Granted';
+                btn.style.background = 'linear-gradient(135deg,#16a34a,#4ade80)';
+                btn.style.opacity = '1';
+            }, 1800);
+        }
+    </script>
+</body>
+</html>

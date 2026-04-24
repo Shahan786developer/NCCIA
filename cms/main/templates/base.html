@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="NCCIA Case Management System — National Cyber Crime Investigation Agency, Pakistan">
+  <meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a1c5c'/><text x='16' y='22' text-anchor='middle' font-size='13' font-weight='bold' fill='%23c9a84c' font-family='serif'>NC</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <title>{% block title %}Dashboard{% endblock %} — NCCIA Case Management System</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a3d2e'/><text x='16' y='22' text-anchor='middle' font-size='14' font-weight='bold' fill='%23c9a84c' font-family='serif'>NC</text></svg>">
+
+  <!-- Google Fonts (preconnect for performance) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+{% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+  <!-- ════════════════════════════════════
+       APP WRAPPER
+       ════════════════════════════════════ -->
+  <div class="app-wrapper">
+
+    <!-- ── Sidebar ── -->
+    {% include 'sidebar.html' %}
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <!-- ── Main Content ── -->
+    <div class="main-content" id="mainContent">
+
+      <!-- ── Header ── -->
+      {% include 'header.html' %}
+
+      <!-- ── Page Content ── -->
+      <main class="page-content" id="pageContent" role="main">
+        {% block page_content %}
+        <!-- Child templates override this block -->
+        {% endblock %}
+      </main>
+
+      <!-- ── Footer ── -->
+      {% include 'footer.html' %}
+
+    </div>
+    <!-- /main-content -->
+
+  </div>
+  <!-- /app-wrapper -->
+
+  <!-- ════════════════════════════════════
+       GLOBAL SCRIPTS
+       ════════════════════════════════════ -->
+
+  <script src="../static/js/main.js"></script>
+
+  <script>
+  /* ─────────────────────────────────────
+     Global Utilities
+     ───────────────────────────────────── */
+  (function() {
+    'use strict';
+
+    /* ── Active page highlight via URL hash ── */
+    function setActivePage() {
+      const hash = window.location.hash.replace('#', '') || 'dashboard';
+      document.querySelectorAll('.nav-link[data-page]').forEach(link => {
+        link.classList.toggle('active', link.dataset.page === hash);
+      });
+      const page = document.getElementById('breadcrumbPage');
+      if (page) {
+        const label = hash.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+        page.textContent = label;
+      }
+    }
+
+    window.addEventListener('hashchange', setActivePage);
+    setActivePage();
+
+    /* ── Date inputs: set today as max ── */
+    const today = new Date().toISOString().split('T')[0];
+    document.querySelectorAll('input[type="date"]').forEach(el => {
+      if (!el.getAttribute('max')) el.setAttribute('max', today);
+    });
+
+    /* ── Stat card number counter animation ── */
+    function animateCounters() {
+      document.querySelectorAll('.stat-value').forEach(el => {
+        const raw = el.textContent.replace(/,/g,'');
+        const target = parseFloat(raw);
+        if (isNaN(target)) return;
+
+        const isFloat = raw.includes('.');
+        const decimals = isFloat ? (raw.split('.')[1] || '').length : 0;
+        const duration = 800;
+        const steps = 40;
+        const increment = target / steps;
+        let current = 0;
+        let step = 0;
+
+        const timer = setInterval(() => {
+          step++;
+          current += increment;
+          if (step >= steps) {
+            current = target;
+            clearInterval(timer);
+          }
+          el.textContent = isFloat
+            ? current.toFixed(decimals)
+            : Math.round(current).toLocaleString();
+        }, duration / steps);
+      });
+    }
+
+    /* Trigger after slight delay for visual impact */
+    setTimeout(animateCounters, 200);
+
+    /* ── Export button ── */
+    const exportBtn = document.getElementById('exportBtn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        exportBtn.textContent = '⏳ Generating…';
+        exportBtn.disabled = true;
+        setTimeout(() => {
+          exportBtn.textContent = '✓ Exported!';
+          setTimeout(() => {
+            exportBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export`;
+            exportBtn.disabled = false;
+          }, 2000);
+        }, 1500);
+      });
+    }
+
+    /* ── Apply filter button (demo) ── */
+    const applyBtn = document.getElementById('applyFilterBtn');
+    if (applyBtn) {
+      applyBtn.addEventListener('click', () => {
+        applyBtn.textContent = 'Loading…';
+        applyBtn.disabled = true;
+        setTimeout(() => {
+          applyBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Apply`;
+          applyBtn.disabled = false;
+        }, 900);
+      });
+    }
+
+    /* ── Tooltip for priority dots ── */
+    document.querySelectorAll('.priority-dots').forEach(el => {
+      const filled = el.querySelectorAll('.priority-dot.filled').length;
+      const map = { 3: 'High Priority', 2: 'Medium Priority', 1: 'Low Priority' };
+      el.setAttribute('title', map[filled] || 'No Priority');
+    });
+
+  })();
+  </script>
+
+  {% block extra_js %}{% endblock %}
+
+</body>
+</html>

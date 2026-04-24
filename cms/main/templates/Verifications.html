@@ -1,0 +1,644 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<title>{% block title %}Verification{% endblock %} — NCCIA Case Management System</title><!-- ── Alert Banner (server-side message) ── -->
+
+{% block page_content %}
+<!DOCTYPE html>
+
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Verifications — NCCIA Case Management System</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a1c5c'/><text x='16' y='22' text-anchor='middle' font-size='13' font-weight='bold' fill='%23c9a84c' font-family='serif'>NC</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Django: {% load static %} -->
+  <!-- Django: <link rel="stylesheet" href="{% static 'css/style.css' %}"> -->
+  <link rel="stylesheet" href="../static/css/style.css">
+  <!-- Django: <link rel="stylesheet" href="{% static 'css/responsive.css' %}"> -->
+  <link rel="stylesheet" href="../static/css/responsive.css">
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  
+
+    <!-- ── Page Content ── -->
+    <main class="page-content">
+
+      <!-- Page Header -->
+      <div class="page-header animate-fade-up">
+        <div class="page-title-group">
+          <div class="page-label">Complaints</div>
+          <h1 class="page-title">Verifications</h1>
+          <p class="page-subtitle">Assigned verifications queue &nbsp;·&nbsp; CCRC-LHR Circle</p>
+          <div class="title-underline"></div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline btn-sm" id="exportVerifBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="openModal('processModal')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            New Entry
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats mini row -->
+      <div class="mini-stats-row animate-fade-up animate-delay-1">
+        <div class="mini-stat">
+          <div class="mini-stat-value" style="color:var(--primary);">1,337</div>
+          <div class="mini-stat-label">Total Assigned</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-value" style="color:#e8a000;">284</div>
+          <div class="mini-stat-label">Pending Review</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-value" style="color:#17a660;">953</div>
+          <div class="mini-stat-label">Processed</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-value" style="color:#c0392b;">32</div>
+          <div class="mini-stat-label">Due Tomorrow</div>
+        </div>
+      </div>
+
+      <!-- Filters Bar -->
+      <div class="filters-bar animate-fade-up animate-delay-2">
+        <span class="filter-label">Filter</span>
+        <div class="filter-date-range">
+          <input type="date" id="dateFrom" value="2024-01-01" aria-label="From date">
+          <span class="date-sep">to</span>
+          <input type="date" id="dateTo" value="2024-12-31" aria-label="To date">
+        </div>
+        <select class="filter-select" id="statusFilter" aria-label="Status Filter">
+          <option value="">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="processed">Processed</option>
+          <option value="notice">Notice Sent</option>
+        </select>
+        <select class="filter-select" id="sortFilter" aria-label="Sort By">
+          <option>Newest First</option>
+          <option>Oldest First</option>
+          <option>Name A-Z</option>
+          <option>CNIC</option>
+        </select>
+        <div class="filter-spacer"></div>
+        <span id="rowCount" style="font-size:12px;color:var(--text-muted);white-space:nowrap;">Showing <strong id="visibleCount">20</strong> of <strong>1,337</strong></span>
+        <button class="btn btn-primary btn-sm" id="applyFilterBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Apply
+        </button>
+      </div>
+
+      <!-- Bulk Action Bar -->
+      <div class="bulk-bar" id="bulkBar">
+        <span class="bulk-bar-count"><span id="selectedCount">0</span> rows selected</span>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.12);color:#fff;gap:6px;" onclick="bulkProcess()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>
+          Bulk Process
+        </button>
+        <button class="btn btn-sm" style="background:rgba(201,168,76,0.25);color:#e8c87a;gap:6px;" onclick="bulkNotice()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Add Notice
+        </button>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);" onclick="clearSelection()">✕ Clear</button>
+      </div>
+
+      <!-- Verifications Table Card -->
+      <div class="card animate-fade-up animate-delay-3">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            Assigned Verifications
+          </div>
+          <div class="section-actions">
+            <span style="font-size:11.5px;color:var(--text-muted);">Last refreshed: <strong style="color:var(--text-body);">just now</strong></span>
+            <button class="btn btn-outline btn-sm btn-icon" id="refreshTableBtn" title="Refresh table">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table" id="verifTable" aria-label="Verifications Table">
+            <thead>
+              <tr>
+                <th style="width:40px;padding-left:20px;">
+                  <input type="checkbox" id="selectAll" style="cursor:pointer;accent-color:var(--accent-gold);">
+                </th>
+                <th>#</th>
+                <th class="sortable" data-col="tracking">
+                  Tracking No.
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px;opacity:0.5;"><polyline points="6 9 12 15 18 9"/></svg>
+                </th>
+                <th class="sortable verif-table-cnic" data-col="cnic">CNIC</th>
+                <th class="sortable" data-col="name">Complainant Name</th>
+                <th class="sortable verif-table-date-col" data-col="date">Registration Date</th>
+                <th>Status</th>
+                <th style="text-align:center;">Process</th>
+                <th style="text-align:center;">Add Notice</th>
+                <th style="text-align:center;">View</th>
+              </tr>
+            </thead>
+            <tbody id="verifTableBody">
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <div class="pagination-info">
+            Showing <strong id="pageFrom">1</strong>–<strong id="pageTo">20</strong> of <strong>1,337</strong> verifications
+          </div>
+          <div class="pagination-btns">
+            <button class="page-btn" id="prevBtn" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="page-btn active" data-page="1">1</button>
+            <button class="page-btn" data-page="2">2</button>
+            <button class="page-btn" data-page="3">3</button>
+            <span style="padding:0 4px;color:var(--text-muted);font-size:13px;">…</span>
+            <button class="page-btn" data-page="67">67</button>
+            <button class="page-btn" id="nextBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- /card -->
+
+    </main>
+
+    <!-- ── Footer ── -->
+ 
+  </div>
+
+
+<!-- ════════ PROCESS MODAL ════════ -->
+<div class="modal-overlay" id="processModal" role="dialog" aria-modal="true" aria-labelledby="processModalTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span id="processModalTitle">Process Verification</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('processModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Complaint info card -->
+      <div class="form-info-card">
+        <div class="form-info-row">
+          <span class="form-info-label">Tracking No.</span>
+          <span class="form-info-value" id="modalTrackingNo">CCW-C-393/24</span>
+        </div>
+        <div class="form-info-row">
+          <span class="form-info-label">CNIC</span>
+          <span class="form-info-value" id="modalCnic">3520230140711</span>
+        </div>
+        <div class="form-info-row">
+          <span class="form-info-label">Complainant</span>
+          <span class="form-info-value" id="modalName" style="font-family:'DM Sans',sans-serif;font-size:13px;">Muhammad Ali Khan</span>
+        </div>
+        <div class="form-info-row">
+          <span class="form-info-label">Registration Date</span>
+          <span class="form-info-value" id="modalDate">1/15/2024 12:42:19 PM</span>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="processAction">Action</label>
+          <select class="form-control" id="processAction" style="height:40px;padding:0 12px;">
+            <option value="">— Select Action —</option>
+            <option>Finalize Verification</option>
+            <option>Convert to Enquiry</option>
+            <option>Recommend Closure</option>
+            <option>Transfer to Other Circle</option>
+            <option>Closed (Non-Pursuance)</option>
+            <option>Closed (Non-Evidence)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="processOfficer">Assigned Officer</label>
+          <select class="form-control" id="processOfficer" style="height:40px;padding:0 12px;">
+            <option>ASI Muhammad Umar Ilyas</option>
+            <option>ASI Tariq Mahmood</option>
+            <option>ASI Bilal Ahmed</option>
+            <option>ASI Faisal Rafiq</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="processDate">Date of Process</label>
+        <input type="date" class="form-control" id="processDate" value="2024-12-30">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="processRemarks">Remarks / Notes</label>
+        <textarea class="form-control" id="processRemarks" placeholder="Enter processing remarks, findings or next steps…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('processModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="processSubmitBtn" onclick="submitProcess()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Confirm Process
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ NOTICE MODAL ════════ -->
+<div class="modal-overlay" id="noticeModal" role="dialog" aria-modal="true" aria-labelledby="noticeModalTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="noticeModalTitle">Add Notice</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('noticeModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-info-card">
+        <div class="form-info-row">
+          <span class="form-info-label">Tracking No.</span>
+          <span class="form-info-value" id="noticeTrackingNo">CCW-C-393/24</span>
+        </div>
+        <div class="form-info-row">
+          <span class="form-info-label">Complainant</span>
+          <span class="form-info-value" id="noticeName" style="font-family:'DM Sans',sans-serif;font-size:13px;">Muhammad Ali Khan</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="noticeType">Notice Type</label>
+          <select class="form-control" id="noticeType" style="height:40px;padding:0 12px;">
+            <option>— Select Type —</option>
+            <option>Section 160 CrPC</option>
+            <option>Section 161 CrPC</option>
+            <option>PECA 2016</option>
+            <option>Hearing Notice</option>
+            <option>Information Notice</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="noticeDate">Notice Date</label>
+          <input type="date" class="form-control" id="noticeDate" value="2024-12-30">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="noticeHearing">Hearing Date</label>
+        <input type="date" class="form-control" id="noticeHearing">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="noticeText">Notice Details</label>
+        <textarea class="form-control" id="noticeText" placeholder="Enter notice content or instructions…" style="height:100px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('noticeModal')">Cancel</button>
+      <button class="btn btn-gold btn-sm" onclick="submitNotice()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Send Notice
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════ SCRIPTS ════════ -->
+<script>
+/* ───────────────────────────────────────────
+   Verification Data (Django: {{ verifications|safe }})
+   ─────────────────────────────────────────── */
+const VERIF_DATA = [
+  { id:"CCW-C-393/24",  cnic:"3520230140711", name:"Muhammad Ali Khan",    date:"1/15/2024 12:42:19 PM", status:"pending"   },
+  { id:"CCW-C-426/24",  cnic:"3520226813309", name:"ASGHAR ALI",           date:"1/15/2024 2:46:59 PM",  status:"pending"   },
+  { id:"CCW-C-559/24",  cnic:"3520223881425", name:"Zeeshan Khadam",       date:"1/16/2024 1:05:23 PM",  status:"processed" },
+  { id:"CCW-C-601/24",  cnic:"3520248978148", name:"Syed Tahir Shah Bukari",date:"1/16/2024 2:04:08 PM", status:"pending"   },
+  { id:"CCW-C-765/24",  cnic:"3520175764283", name:"RIZWAN ABID",          date:"1/17/2024 3:24:51 PM",  status:"notice"    },
+  { id:"CCW-C-816/24",  cnic:"3520175938153", name:"Nasir Muhammad",       date:"1/18/2024 12:42:19 PM", status:"pending"   },
+  { id:"CCW-C-832/24",  cnic:"3440187383962", name:"ALEENA MARRIAM",       date:"1/18/2024 1:03:33 PM",  status:"processed" },
+  { id:"CCW-C-852/24",  cnic:"",              name:"M Shoaib",             date:"1/18/2024 2:11:48 PM",  status:"pending"   },
+  { id:"CCW-C-1013/24", cnic:"3520256503527", name:"Sobia Qayyum",         date:"1/22/2024 11:44:26 AM", status:"pending"   },
+  { id:"CCW-C-1086/24", cnic:"3410174951659", name:"Malik Amir Ameen",     date:"1/22/2024 3:09:14 PM",  status:"notice"    },
+  { id:"CCW-C-1206/24", cnic:"3520131796763", name:"M Qasim",              date:"1/23/2024 3:17:11 PM",  status:"processed" },
+  { id:"CCW-C-1300/24", cnic:"3520207942531", name:"Adeel Hasan Qureshi",  date:"1/24/2024 2:08:58 PM",  status:"pending"   },
+  { id:"CCW-C-1425/24", cnic:"3520289404921", name:"M YAHYA",              date:"1/25/2024 1:13:19 PM",  status:"pending"   },
+  { id:"CCW-C-1546/24", cnic:"3520150164046", name:"Saleha Bibi",          date:"1/26/2024 5:31:01 PM",  status:"processed" },
+  { id:"CCW-C-1612/24", cnic:"3740513891553", name:"FARHAN IQBAL",         date:"1/27/2024 10:14:22 AM", status:"pending"   },
+  { id:"CCW-C-1689/24", cnic:"3520198347219", name:"Rabia Noor",           date:"1/27/2024 3:45:11 PM",  status:"notice"    },
+  { id:"CCW-C-1754/24", cnic:"3310041287654", name:"Tariq Mehmood Butt",   date:"1/28/2024 9:22:38 AM",  status:"pending"   },
+  { id:"CCW-C-1801/24", cnic:"3520266714890", name:"Hira Khalid",          date:"1/29/2024 2:17:55 PM",  status:"processed" },
+  { id:"CCW-C-1865/24", cnic:"3520319027443", name:"Zaheer Ahmed",         date:"1/30/2024 11:08:44 AM", status:"pending"   },
+  { id:"CCW-C-1932/24", cnic:"3530181726305", name:"AAMNA SAFDAR",         date:"1/31/2024 4:52:29 PM",  status:"pending"   },
+];
+
+/* ── Render Table ── */
+let filteredData = [...VERIF_DATA];
+let currentPage  = 1;
+const perPage    = 20;
+
+function statusBadge(s) {
+  const map = {
+    pending:   '<span class="badge badge-pending">Pending</span>',
+    processed: '<span class="badge badge-active">Processed</span>',
+    notice:    '<span class="badge badge-info">Notice Sent</span>',
+  };
+  return map[s] || '';
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('verifTableBody');
+  tbody.innerHTML = '';
+  const start = (currentPage - 1) * perPage;
+  const slice = data.slice(start, start + perPage);
+
+  slice.forEach((v, i) => {
+    const global = start + i + 1;
+    const cnic = v.cnic
+      ? `<span class="font-mono" style="font-size:12px;">${v.cnic}</span>`
+      : `<span style="color:var(--text-muted);font-size:12px;font-style:italic;">—</span>`;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="padding-left:20px;">
+        <input type="checkbox" class="row-check" data-id="${v.id}" style="cursor:pointer;accent-color:var(--accent-gold);">
+      </td>
+      <td style="font-size:12px;color:var(--text-muted);">${global}</td>
+      <td><span class="table-id">${v.id}</span></td>
+      <td class="verif-table-cnic">${cnic}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px;">
+          <div style="width:30px;height:30px;border-radius:50%;background:rgba(10,28,92,0.1);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--primary);flex-shrink:0;">
+            ${v.name.trim().split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase()}
+          </div>
+          <span style="font-size:13px;font-weight:500;">${v.name}</span>
+        </div>
+      </td>
+      <td class="verif-table-date-col"><span style="font-size:12.5px;color:var(--text-muted);">${v.date}</span></td>
+      <td>${statusBadge(v.status)}</td>
+      <td style="text-align:center;">
+        <button class="action-btn action-btn-process" onclick="openProcess('${v.id}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/></svg>
+          <span>Process</span>
+        </button>
+      </td>
+      <td style="text-align:center;">
+        <button class="action-btn action-btn-notice" onclick="openNotice('${v.id}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span>Add Notice</span>
+        </button>
+      </td>
+      <td style="text-align:center;">
+        <button class="action-btn action-btn-view" onclick="alert('Viewing ${v.id}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>View</span>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  /* Update pagination info */
+  document.getElementById('pageFrom').textContent = data.length ? start+1 : 0;
+  document.getElementById('pageTo').textContent   = Math.min(start+perPage, data.length);
+  document.getElementById('visibleCount').textContent = data.length;
+  document.getElementById('prevBtn').disabled = currentPage === 1;
+  document.getElementById('nextBtn').disabled = (currentPage * perPage) >= data.length;
+
+  /* Re-bind row checkboxes */
+  bindRowChecks();
+}
+
+renderTable(filteredData);
+
+/* ── Pagination ── */
+document.querySelectorAll('.page-btn[data-page]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    currentPage = parseInt(this.dataset.page);
+    document.querySelectorAll('.page-btn[data-page]').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    renderTable(filteredData);
+    document.querySelector('.card').scrollIntoView({behavior:'smooth'});
+  });
+});
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (currentPage > 1) { currentPage--; renderTable(filteredData); }
+});
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (currentPage * perPage < filteredData.length) { currentPage++; renderTable(filteredData); }
+});
+
+/* ── Search ── */
+document.getElementById('tableSearch').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  filteredData = VERIF_DATA.filter(v =>
+    v.id.toLowerCase().includes(q) ||
+    v.cnic.includes(q) ||
+    v.name.toLowerCase().includes(q)
+  );
+  currentPage = 1;
+  renderTable(filteredData);
+});
+
+/* ── Apply Filter ── */
+document.getElementById('applyFilterBtn').addEventListener('click', function() {
+  const status = document.getElementById('statusFilter').value;
+  filteredData = status
+    ? VERIF_DATA.filter(v => v.status === status)
+    : [...VERIF_DATA];
+  currentPage = 1;
+  renderTable(filteredData);
+});
+
+/* ── Select All ── */
+function bindRowChecks() {
+  document.querySelectorAll('.row-check').forEach(cb => {
+    cb.addEventListener('change', updateBulkBar);
+  });
+}
+document.getElementById('selectAll').addEventListener('change', function() {
+  document.querySelectorAll('.row-check').forEach(cb => cb.checked = this.checked);
+  updateBulkBar();
+});
+function updateBulkBar() {
+  const checked = document.querySelectorAll('.row-check:checked').length;
+  const bulkBar = document.getElementById('bulkBar');
+  document.getElementById('selectedCount').textContent = checked;
+  bulkBar.classList.toggle('visible', checked > 0);
+}
+function clearSelection() {
+  document.querySelectorAll('.row-check, #selectAll').forEach(cb => cb.checked = false);
+  document.getElementById('bulkBar').classList.remove('visible');
+}
+function bulkProcess() { alert('Bulk processing ' + document.querySelectorAll('.row-check:checked').length + ' items'); }
+function bulkNotice()  { alert('Adding notice to ' + document.querySelectorAll('.row-check:checked').length + ' items'); }
+
+/* ── Modal helpers ── */
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(o => closeModal(o.id));
+});
+
+/* ── Open Process modal with data ── */
+function openProcess(trackingId) {
+  const v = VERIF_DATA.find(x => x.id === trackingId);
+  if (!v) return;
+  document.getElementById('modalTrackingNo').textContent = v.id;
+  document.getElementById('modalCnic').textContent       = v.cnic || 'N/A';
+  document.getElementById('modalName').textContent       = v.name;
+  document.getElementById('modalDate').textContent       = v.date;
+  document.getElementById('processAction').value         = '';
+  document.getElementById('processRemarks').value        = '';
+  openModal('processModal');
+}
+
+function openNotice(trackingId) {
+  const v = VERIF_DATA.find(x => x.id === trackingId);
+  if (!v) return;
+  document.getElementById('noticeTrackingNo').textContent = v.id;
+  document.getElementById('noticeName').textContent       = v.name;
+  document.getElementById('noticeText').value             = '';
+  openModal('noticeModal');
+}
+
+function submitProcess() {
+  const action = document.getElementById('processAction').value;
+  if (!action) { document.getElementById('processAction').focus(); return; }
+  const btn = document.getElementById('processSubmitBtn');
+  btn.textContent = '⏳ Processing…';
+  btn.disabled = true;
+  setTimeout(() => {
+    closeModal('processModal');
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Confirm Process`;
+    btn.disabled = false;
+    showToast('✓ Verification processed successfully', 'success');
+  }, 1200);
+}
+
+function submitNotice() {
+  showToast('✓ Notice sent successfully', 'success');
+  closeModal('noticeModal');
+}
+
+/* ── Toast ── */
+function showToast(msg, type='success') {
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position:fixed;bottom:28px;right:28px;z-index:9999;
+    padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;
+    box-shadow:0 8px 30px rgba(0,0,0,0.15);
+    display:flex;align-items:center;gap:8px;
+    animation:slideInToast 0.35s cubic-bezier(0.22,1,0.36,1) both;
+    background:${type==='success' ? '#0a1c5c' : '#c0392b'};
+    color:#fff;
+  `;
+  toast.innerHTML = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity='0'; toast.style.transform='translateY(10px)'; toast.style.transition='all 0.3s'; setTimeout(()=>toast.remove(),300); }, 3000);
+}
+
+/* ── Sidebar Toggle ── */
+(function(){
+  const toggleBtn   = document.getElementById('sidebarToggle');
+  const sidebar     = document.getElementById('appSidebar');
+  const mainContent = document.getElementById('mainContent');
+  if (toggleBtn && sidebar && mainContent) {
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+      mainContent.classList.toggle('expanded');
+      localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
+    });
+    if (localStorage.getItem('sidebar_collapsed') === 'true') {
+      sidebar.classList.add('collapsed');
+      mainContent.classList.add('expanded');
+    }
+  }
+
+  /* Submenu toggles */
+  ['analytics','dac'].forEach(key => {
+    const toggle  = document.getElementById(key+'Toggle');
+    const submenu = document.getElementById(key+'Submenu');
+    const arrow   = document.getElementById(key+'Arrow');
+    if (!toggle || !submenu) return;
+    toggle.addEventListener('click', e => {
+      e.preventDefault();
+      const open = submenu.classList.toggle('open');
+      if (arrow) arrow.style.transform = open ? 'rotate(180deg)' : '';
+    });
+  });
+
+  /* Notification dropdown */
+  const notifBtn  = document.getElementById('notifBtn');
+  const notifDrop = document.getElementById('notifDropdown');
+  if (notifBtn && notifDrop) {
+    notifBtn.addEventListener('click', e => { e.stopPropagation(); notifDrop.classList.toggle('open'); });
+    document.addEventListener('click', () => notifDrop.classList.remove('open'));
+    notifDrop.addEventListener('click', e => e.stopPropagation());
+  }
+
+  /* Refresh animation */
+  document.getElementById('refreshBtn').addEventListener('click', () => {
+    document.getElementById('refreshBtn').style.animation = 'spin 0.7s linear';
+    setTimeout(() => document.getElementById('refreshBtn').style.animation = '', 700);
+  });
+  document.getElementById('refreshTableBtn').addEventListener('click', () => {
+    renderTable(filteredData);
+    showToast('✓ Table refreshed', 'success');
+  });
+
+  /* Export */
+  document.getElementById('exportVerifBtn').addEventListener('click', function() {
+    this.textContent = '⏳ Generating…';
+    this.disabled = true;
+    setTimeout(() => {
+      this.textContent = '✓ Exported!';
+      setTimeout(() => {
+        this.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export`;
+        this.disabled = false;
+      }, 2000);
+    }, 1200);
+  });
+
+  /* Ctrl+K search focus */
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey||e.metaKey) && e.key==='k') {
+      e.preventDefault();
+      document.getElementById('tableSearch').focus();
+    }
+  });
+})();
+</script>
+
+<style>
+@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+@keyframes slideInToast { from { opacity:0;transform:translateY(20px); } to { opacity:1;transform:translateY(0); } }
+.sortable { cursor:pointer; user-select:none; }
+.sortable:hover { color:var(--accent-gold-light); }
+</style>
+</body>
+</html>
+{% endblock %}

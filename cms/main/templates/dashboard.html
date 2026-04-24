@@ -1,0 +1,762 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<title>{% block title %}Dashboard{% endblock %} — NCCIA Case Management System</title><!-- ── Alert Banner (server-side message) ── -->
+
+{% block page_content %}
+
+<div class="alert-banner info animate-fade-up" id="welcomeBanner" role="alert">
+  <svg class="alert-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/>
+  </svg>
+  <!-- Django: {% if messages %}{% for msg in messages %}{{ msg }}{% endfor %}{% endif %} -->
+  Welcome back, <strong>Umar Ilyas</strong>. You have <strong>1,337 pending verifications</strong> and <strong>5 new notifications</strong> today.
+  <button class="alert-close" onclick="document.getElementById('welcomeBanner').remove()" aria-label="Dismiss">✕</button>
+</div>
+
+<!-- ── Page Header ── -->
+<div class="page-header animate-fade-up animate-delay-1">
+  <div class="page-title-group">
+    <div class="page-label">Overview</div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">
+      <!-- Django: {% now "l, d F Y" %} -->
+      Monday, 01 January 2026 &nbsp;·&nbsp; CCRC-LHR Circle
+    </p>
+    <div class="title-underline"></div>
+  </div>
+
+  <div class="page-actions">
+    <!-- Django: csrf_token for forms -->
+    <div class="filters-bar" style="margin:0;padding:10px 14px;">
+      <span class="filter-label">Period</span>
+      <div class="filter-date-range">
+        <!-- Django: {{ filter_form.date_from }} -->
+        <input type="date" id="dateFrom" value="2026-01-01" aria-label="From date">
+        <span class="date-sep">to</span>
+        <!-- Django: {{ filter_form.date_to }} -->
+        <input type="date" id="dateTo" value="2026-12-31" aria-label="To date">
+      </div>
+      <select class="filter-select" id="accountFilter" aria-label="Account Level">
+        <!-- Django: {% for choice in account_choices %}<option>{{ choice }}</option>{% endfor %} -->
+        <option>User Level Account</option>
+        <option>Circle Level Account</option>
+        <option>Zone Level Account</option>
+        <option>HQ Level Account</option>
+      </select>
+      <button class="btn btn-primary btn-sm" id="applyFilterBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        Apply
+      </button>
+      <button class="btn btn-outline btn-sm" id="exportBtn" title="Export Report">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Export
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PRIMARY STATS GRID  (8 cards)
+     Django: {% for stat in stats %}...{% endfor %}
+     ══════════════════════════════════════════════ -->
+<div class="stats-grid animate-fade-up animate-delay-2">
+
+  <!-- 1 ── Total Verifications -->
+  <div class="stat-card green">
+    <div class="stat-card-top">
+      <div class="stat-icon green">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+      </div>
+      <div class="stat-trend up">↑ 12%</div>
+    </div>
+    <!-- Django: {{ stats.total_verifications }} -->
+    <div class="stat-value">1,527</div>
+    <div class="stat-label">Total Verifications</div>
+    <div class="stat-footer">
+      <span>Pending</span>
+      <!-- Django: {{ stats.pending_verifications }} -->
+      <span class="stat-footer-value" style="color:var(--status-pending);">1,337</span>
+    </div>
+  </div>
+
+  <!-- 2 ── Pending -->
+  <div class="stat-card orange">
+    <div class="stat-card-top">
+      <div class="stat-icon orange">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="stat-trend neutral">— 0%</div>
+    </div>
+    <div class="stat-value">284</div>
+    <div class="stat-label">Pending Review</div>
+    <div class="stat-footer">
+      <span>Avg Wait</span>
+      <span class="stat-footer-value">4.2 days</span>
+    </div>
+  </div>
+
+  <!-- 3 ── Finalized -->
+  <div class="stat-card teal">
+    <div class="stat-card-top">
+      <div class="stat-icon teal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="stat-trend up">↑ 8%</div>
+    </div>
+    <div class="stat-value">392</div>
+    <div class="stat-label">Finalized Cases</div>
+    <div class="stat-footer">
+      <span>This Month</span>
+      <span class="stat-footer-value">47</span>
+    </div>
+  </div>
+
+  <!-- 4 ── Converted to Enquiry -->
+  <div class="stat-card blue">
+    <div class="stat-card-top">
+      <div class="stat-icon blue">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </div>
+      <div class="stat-trend up">↑ 5%</div>
+    </div>
+    <div class="stat-value">156</div>
+    <div class="stat-label">Converted to Enquiry</div>
+    <div class="stat-footer">
+      <span>Active Enquiries</span>
+      <span class="stat-footer-value">48</span>
+    </div>
+  </div>
+
+  <!-- 5 ── Recommended for Closure -->
+  <div class="stat-card gold">
+    <div class="stat-card-top">
+      <div class="stat-icon gold">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div class="stat-trend down">↓ 2%</div>
+    </div>
+    <div class="stat-value">73</div>
+    <div class="stat-label">Recommended Closure</div>
+    <div class="stat-footer">
+      <span>Awaiting Approval</span>
+      <span class="stat-footer-value">29</span>
+    </div>
+  </div>
+
+  <!-- 6 ── Closed Non-Pursuance -->
+  <div class="stat-card gray">
+    <div class="stat-card-top">
+      <div class="stat-icon gray">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+      </div>
+      <div class="stat-trend neutral">— 0%</div>
+    </div>
+    <div class="stat-value">118</div>
+    <div class="stat-label">Closed (Non-Pursuance)</div>
+    <div class="stat-footer">
+      <span>Last 30 days</span>
+      <span class="stat-footer-value">14</span>
+    </div>
+  </div>
+
+  <!-- 7 ── Closed Non-Evidence -->
+  <div class="stat-card red">
+    <div class="stat-card-top">
+      <div class="stat-icon red">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="stat-trend up">↑ 3%</div>
+    </div>
+    <div class="stat-value">89</div>
+    <div class="stat-label">Closed (Non-Evidence)</div>
+    <div class="stat-footer">
+      <span>Under Review</span>
+      <span class="stat-footer-value">11</span>
+    </div>
+  </div>
+
+  <!-- 8 ── Avg Processing Time -->
+  <div class="stat-card purple">
+    <div class="stat-card-top">
+      <div class="stat-icon purple">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="stat-trend down">↓ 11%</div>
+    </div>
+    <div class="stat-value">6.8</div>
+    <div class="stat-label">Avg Processing Days</div>
+    <div class="stat-footer">
+      <span>Target</span>
+      <span class="stat-footer-value" style="color:var(--status-success);">≤ 7 days ✓</span>
+    </div>
+  </div>
+
+</div>
+<!-- /stats-grid -->
+
+
+<!-- ══════════════════════════════════════════════
+     MINI STATS (Closure types)
+     ══════════════════════════════════════════════ -->
+<div class="mini-stats-row animate-fade-up animate-delay-3">
+  <div class="mini-stat">
+    <div class="mini-stat-value">34</div>
+    <div class="mini-stat-label">Transfer (Circles)</div>
+  </div>
+  <div class="mini-stat">
+    <div class="mini-stat-value">19</div>
+    <div class="mini-stat-label">Merge (Other Complaint)</div>
+  </div>
+  <div class="mini-stat">
+    <div class="mini-stat-value">62</div>
+    <div class="mini-stat-label">Jurisdiction Wanted</div>
+  </div>
+  <div class="mini-stat">
+    <div class="mini-stat-value">91%</div>
+    <div class="mini-stat-label">Overall Performance</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     ROW 1:  Chart (2/3) + Donut (1/3)
+     ══════════════════════════════════════════════ -->
+<div class="dashboard-grid animate-fade-up animate-delay-4">
+
+  <!-- Monthly Complaint Trends -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="card-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        Monthly Complaint Trends
+      </div>
+      <div class="section-actions">
+        <select class="filter-select" style="height:30px;font-size:12px;" aria-label="Year">
+          <option>2026</option><option>2025</option><option>2024</option>
+        </select>
+        <button class="btn btn-outline btn-sm btn-icon" title="Expand chart">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+            <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Legend -->
+      <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);">
+          <span style="width:12px;height:12px;border-radius:2px;background:var(--primary);display:inline-block;"></span>
+          Complaints Received
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);">
+          <span style="width:12px;height:12px;border-radius:2px;background:var(--accent-gold);display:inline-block;"></span>
+          Resolved
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);">
+          <span style="width:12px;height:12px;border-radius:2px;background:#1e6fa8;display:inline-block;"></span>
+          Converted to Enquiry
+        </div>
+      </div>
+
+      <!-- Bar Chart (pure CSS/SVG) -->
+      <div class="chart-container">
+        <div class="chart-bar-group">
+          <!-- Jan -->
+          <div class="chart-bar-item">
+            <div class="chart-bar primary" style="height:65%;" title="Received: 98"></div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="chart-bar gold"    style="height:42%;" title="Resolved: 63"></div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="chart-bar blue"    style="height:20%;" title="Enquiry: 30"></div>
+          </div>
+          <!-- Feb -->
+          <div class="chart-bar-item" style="margin-left:8px;">
+            <div class="chart-bar primary" style="height:78%;" title="Received: 117"></div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="chart-bar gold"    style="height:55%;" title="Resolved: 82"></div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="chart-bar blue"    style="height:25%;" title="Enquiry: 37"></div>
+          </div>
+          <!-- Mar -->
+          <div class="chart-bar-item" style="margin-left:8px;">
+            <div class="chart-bar primary" style="height:55%;" title="Received: 82"></div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="chart-bar gold"    style="height:48%;" title="Resolved: 72"></div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="chart-bar blue"    style="height:18%;" title="Enquiry: 27"></div>
+          </div>
+          <!-- Apr -->
+          <div class="chart-bar-item" style="margin-left:8px;">
+            <div class="chart-bar primary" style="height:90%;" title="Received: 135"></div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="chart-bar gold"    style="height:62%;" title="Resolved: 93"></div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="chart-bar blue"    style="height:30%;" title="Enquiry: 45"></div>
+          </div>
+          <!-- May -->
+          <div class="chart-bar-item" style="margin-left:8px;">
+            <div class="chart-bar primary" style="height:70%;" title="Received: 105"></div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="chart-bar gold"    style="height:58%;" title="Resolved: 87"></div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="chart-bar blue"    style="height:22%;" title="Enquiry: 33"></div>
+          </div>
+          <!-- Jun -->
+          <div class="chart-bar-item" style="margin-left:8px;">
+            <div class="chart-bar primary" style="height:100%;" title="Received: 150"></div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="chart-bar gold"    style="height:72%;" title="Resolved: 108"></div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="chart-bar blue"    style="height:38%;" title="Enquiry: 57"></div>
+          </div>
+        </div>
+
+        <div class="chart-x-axis">
+          <span class="chart-x-label" style="flex:3;">Jan</span>
+          <span class="chart-x-label" style="flex:3;">Feb</span>
+          <span class="chart-x-label" style="flex:3;">Mar</span>
+          <span class="chart-x-label" style="flex:3;">Apr</span>
+          <span class="chart-x-label" style="flex:3;">May</span>
+          <span class="chart-x-label" style="flex:3;">Jun</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complaint Category Breakdown (Donut) -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="card-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+            <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+          </svg>
+        </div>
+        Complaint Categories
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="donut-wrap" style="flex-direction:column;gap:16px;">
+        <!-- SVG Donut -->
+        <svg class="donut-svg" viewBox="0 0 120 120" width="120" height="120" style="margin:0 auto;display:block;">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="var(--bg-body)" stroke-width="20"/>
+          <!-- Financial Fraud 35% -->
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#0a3d2e" stroke-width="20"
+                  stroke-dasharray="109.96 204.2" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+          <!-- Cyberstalking 25% -->
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#c9a84c" stroke-width="20"
+                  stroke-dasharray="78.54 235.62" stroke-dashoffset="-109.96" transform="rotate(-90 60 60)"/>
+          <!-- Hacking 20% -->
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#1e6fa8" stroke-width="20"
+                  stroke-dasharray="62.83 251.33" stroke-dashoffset="-188.5" transform="rotate(-90 60 60)"/>
+          <!-- Impersonation 12% -->
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#e8a000" stroke-width="20"
+                  stroke-dasharray="37.7 276.46" stroke-dashoffset="-251.33" transform="rotate(-90 60 60)"/>
+          <!-- Other 8% -->
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#5a6e6a" stroke-width="20"
+                  stroke-dasharray="25.13 289.03" stroke-dashoffset="-289.03" transform="rotate(-90 60 60)"/>
+          <text x="60" y="55" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text-heading)" font-family="Cinzel">1,527</text>
+          <text x="60" y="68" text-anchor="middle" font-size="8" fill="var(--text-muted)">Total Cases</text>
+        </svg>
+
+        <div class="donut-legend">
+          <div class="donut-legend-item">
+            <div class="donut-dot" style="background:#0a3d2e;"></div>
+            <span class="donut-label">Financial Fraud</span>
+            <span class="donut-val">535 <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(35%)</span></span>
+          </div>
+          <div class="donut-legend-item">
+            <div class="donut-dot" style="background:#c9a84c;"></div>
+            <span class="donut-label">Cyberstalking</span>
+            <span class="donut-val">382 <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(25%)</span></span>
+          </div>
+          <div class="donut-legend-item">
+            <div class="donut-dot" style="background:#1e6fa8;"></div>
+            <span class="donut-label">Hacking / Intrusion</span>
+            <span class="donut-val">305 <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(20%)</span></span>
+          </div>
+          <div class="donut-legend-item">
+            <div class="donut-dot" style="background:#e8a000;"></div>
+            <span class="donut-label">Impersonation</span>
+            <span class="donut-val">183 <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(12%)</span></span>
+          </div>
+          <div class="donut-legend-item">
+            <div class="donut-dot" style="background:#5a6e6a;"></div>
+            <span class="donut-label">Other Offences</span>
+            <span class="donut-val">122 <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(8%)</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- /dashboard-grid row 1 -->
+
+
+<!-- ══════════════════════════════════════════════
+     ROW 2: Recent Complaints (table) + Activity Feed
+     ══════════════════════════════════════════════ -->
+<div class="dashboard-grid animate-fade-up animate-delay-5">
+
+  <!-- Recent Complaints Table -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="card-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        Recent Complaints
+      </div>
+      <div class="section-actions">
+        <a href="#all-complaints" class="btn btn-outline btn-sm">View All</a>
+        <a href="#new-complaint" class="btn btn-primary btn-sm">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14"/><path d="M5 12h14"/>
+          </svg>
+          New
+        </a>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div class="table-responsive">
+        <table class="data-table" style="display: table; width: 100%;" aria-label="Recent Complaints">
+          <thead>
+            <tr>
+              <th>Case ID</th>
+              <th>Complainant</th>
+              <th>Category</th>
+              <th>Priority</th>
+              <th>Officer</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th style="text-align:center;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="table-id">#CMS-2024-1891</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;border-radius:50%;background:rgba(10,61,46,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--primary);">AK</div>
+                  <span style="font-size:13px;font-weight:500;">Ahmed Khalid</span>
+                </div>
+              </td>
+              <td><span style="font-size:12.5px;">Cyberstalking</span></td>
+              <td>
+                <div class="priority-dots">
+                  <div class="priority-dot filled high"></div>
+                  <div class="priority-dot filled high"></div>
+                  <div class="priority-dot filled high"></div>
+                </div>
+              </td>
+              <td><span style="font-size:12.5px;color:var(--text-muted);">ASI Tariq</span></td>
+              <td><span class="badge badge-urgent">Urgent</span></td>
+              <td><span style="font-size:12px;color:var(--text-muted);">28 Dec 2024</span></td>
+              <td style="text-align:center;">
+                <button class="btn btn-outline btn-sm btn-icon" title="View Case">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="table-id">#CMS-2024-1890</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;border-radius:50%;background:rgba(201,168,76,0.12);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent-gold-dim);">SB</div>
+                  <span style="font-size:13px;font-weight:500;">Sara Baig</span>
+                </div>
+              </td>
+              <td><span style="font-size:12.5px;">Financial Fraud</span></td>
+              <td>
+                <div class="priority-dots">
+                  <div class="priority-dot filled medium"></div>
+                  <div class="priority-dot filled medium"></div>
+                  <div class="priority-dot"></div>
+                </div>
+              </td>
+              <td><span style="font-size:12.5px;color:var(--text-muted);">ASI Umar</span></td>
+              <td><span class="badge badge-active">Active</span></td>
+              <td><span style="font-size:12px;color:var(--text-muted);">27 Dec 2024</span></td>
+              <td style="text-align:center;">
+                <button class="btn btn-outline btn-sm btn-icon" title="View Case">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="table-id">#CMS-2024-1889</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;border-radius:50%;background:rgba(30,111,168,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#1e6fa8;">MR</div>
+                  <span style="font-size:13px;font-weight:500;">M. Rafique</span>
+                </div>
+              </td>
+              <td><span style="font-size:12.5px;">Hacking / Intrusion</span></td>
+              <td>
+                <div class="priority-dots">
+                  <div class="priority-dot filled high"></div>
+                  <div class="priority-dot filled high"></div>
+                  <div class="priority-dot filled high"></div>
+                </div>
+              </td>
+              <td><span style="font-size:12.5px;color:var(--text-muted);">ASI Bilal</span></td>
+              <td><span class="badge badge-pending">Pending</span></td>
+              <td><span style="font-size:12px;color:var(--text-muted);">26 Dec 2024</span></td>
+              <td style="text-align:center;">
+                <button class="btn btn-outline btn-sm btn-icon" title="View Case">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="table-id">#CMS-2024-1888</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;border-radius:50%;background:rgba(107,33,168,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#6b21a8;">FA</div>
+                  <span style="font-size:13px;font-weight:500;">Fatima Awan</span>
+                </div>
+              </td>
+              <td><span style="font-size:12.5px;">Impersonation</span></td>
+              <td>
+                <div class="priority-dots">
+                  <div class="priority-dot filled low"></div>
+                  <div class="priority-dot"></div>
+                  <div class="priority-dot"></div>
+                </div>
+              </td>
+              <td><span style="font-size:12.5px;color:var(--text-muted);">ASI Umar</span></td>
+              <td><span class="badge badge-finalized">Finalized</span></td>
+              <td><span style="font-size:12px;color:var(--text-muted);">25 Dec 2024</span></td>
+              <td style="text-align:center;">
+                <button class="btn btn-outline btn-sm btn-icon" title="View Case">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="table-id">#CMS-2024-1887</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;border-radius:50%;background:rgba(90,110,106,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#5a6e6a;">ZH</div>
+                  <span style="font-size:13px;font-weight:500;">Zainab Hassan</span>
+                </div>
+              </td>
+              <td><span style="font-size:12.5px;">Financial Fraud</span></td>
+              <td>
+                <div class="priority-dots">
+                  <div class="priority-dot filled medium"></div>
+                  <div class="priority-dot filled medium"></div>
+                  <div class="priority-dot"></div>
+                </div>
+              </td>
+              <td><span style="font-size:12.5px;color:var(--text-muted);">ASI Tariq</span></td>
+              <td><span class="badge badge-closed">Closed</span></td>
+              <td><span style="font-size:12px;color:var(--text-muted);">24 Dec 2024</span></td>
+              <td style="text-align:center;">
+                <button class="btn btn-outline btn-sm btn-icon" title="View Case">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Feed + Performance -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+
+    <!-- Activity Feed -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          Recent Activity
+        </div>
+        <a href="#all-activity" style="font-size:12px;color:var(--primary);font-weight:600;">See all →</a>
+      </div>
+      <div class="card-body">
+        <div class="activity-feed">
+          <div class="activity-item">
+            <div class="activity-dot-wrap">
+              <div class="activity-dot green">✓</div>
+              <div class="activity-line"></div>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Case #1891 escalated to urgent</div>
+              <div class="activity-desc">Action taken by ASI Umar Ilyas</div>
+            </div>
+            <div class="activity-time">2m ago</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot-wrap">
+              <div class="activity-dot blue">📄</div>
+              <div class="activity-line"></div>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">New complaint registered</div>
+              <div class="activity-desc">#CMS-2024-1892 — Financial Fraud</div>
+            </div>
+            <div class="activity-time">15m ago</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot-wrap">
+              <div class="activity-dot gold">★</div>
+              <div class="activity-line"></div>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Enquiry #1780 finalized</div>
+              <div class="activity-desc">Closure approved by Circle Head</div>
+            </div>
+            <div class="activity-time">1h ago</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot-wrap">
+              <div class="activity-dot red">!</div>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Verification deadline approaching</div>
+              <div class="activity-desc">32 verifications due tomorrow</div>
+            </div>
+            <div class="activity-time">3h ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Progress -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6"  y1="20" x2="6"  y2="14"/>
+            </svg>
+          </div>
+          Pendency by Category
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="progress-list">
+          <div class="progress-item">
+            <div class="progress-header">
+              <span class="progress-name">Financial Fraud</span>
+              <span class="progress-count">535</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width:35%;background:linear-gradient(90deg,var(--primary),var(--primary-light));"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-header">
+              <span class="progress-name">Cyberstalking</span>
+              <span class="progress-count">382</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width:25%;background:linear-gradient(90deg,var(--accent-gold-dim),var(--accent-gold));"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-header">
+              <span class="progress-name">Hacking / Intrusion</span>
+              <span class="progress-count">305</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width:20%;background:linear-gradient(90deg,#1e5fa8,#5ba3d0);"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-header">
+              <span class="progress-name">Impersonation</span>
+              <span class="progress-count">183</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width:12%;background:linear-gradient(90deg,#c07000,#e8a000);"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-header">
+              <span class="progress-name">Other Offences</span>
+              <span class="progress-count">122</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width:8%;background:linear-gradient(90deg,#4a5c58,#8fa09a);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
