@@ -7,6 +7,8 @@ urlpatterns = [
     path('', dashboard, name='dashboard'),
     path('verifications/', verifications, name='verifications'),
     path('login/', login, name='login'),
+    path('newcomplaint/', newcomplaint, name='newcomplaint'),
+    path('newenquiry/', newenquiry, name='newenquiry'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

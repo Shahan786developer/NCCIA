@@ -10,3 +10,10 @@ def verifications(request):
 
 def login(request):
     return render(request, 'Login.html')
+
+def newcomplaint(request):
+    return render(request, 'newcomplain.html')
+
+def newenquiry(request):
+    return render(request, 'newenquiry.html')
+
