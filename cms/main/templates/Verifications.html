@@ -58,15 +58,15 @@
           <div class="mini-stat-label">Total Assigned</div>
         </div>
         <div class="mini-stat">
-          <div class="mini-stat-value" style="color:#e8a000;">284</div>
+          <div class="mini-stat-value" style="color:var(--primary);">284</div>
           <div class="mini-stat-label">Pending Review</div>
         </div>
         <div class="mini-stat">
-          <div class="mini-stat-value" style="color:#17a660;">953</div>
+          <div class="mini-stat-value" style="color:var(--primary);">953</div>
           <div class="mini-stat-label">Processed</div>
         </div>
         <div class="mini-stat">
-          <div class="mini-stat-value" style="color:#c0392b;">32</div>
+          <div class="mini-stat-value" style="color:var(--primary);">32</div>
           <div class="mini-stat-label">Due Tomorrow</div>
         </div>
       </div>
@@ -106,7 +106,7 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>
           Bulk Process
         </button>
-        <button class="btn btn-sm" style="background:rgba(201,168,76,0.25);color:#e8c87a;gap:6px;" onclick="bulkNotice()">
+        <button class="btn btn-sm" style="background:rgba(38,64,120,0.25);color:#264078;gap:6px;" onclick="bulkNotice()">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           Add Notice
         </button>
@@ -373,14 +373,14 @@ function renderTable(data) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td style="padding-left:20px;">
-        <input type="checkbox" class="row-check" data-id="${v.id}" style="cursor:pointer;accent-color:var(--accent-gold);">
+        <input type="checkbox" class="row-check" data-id="${v.id}" style="cursor:pointer;accent-color:#2B2B2B;">
       </td>
       <td style="font-size:12px;color:var(--text-muted);">${global}</td>
       <td><span class="table-id">${v.id}</span></td>
       <td class="verif-table-cnic">${cnic}</td>
       <td>
         <div style="display:flex;align-items:center;gap:9px;">
-          <div style="width:30px;height:30px;border-radius:50%;background:rgba(10,28,92,0.1);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--primary);flex-shrink:0;">
+          <div style="width:30px;height:30px;border-radius:50%;background:rgba(38,64,120,0.12);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--primary);flex-shrink:0;">
             ${v.name.trim().split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase()}
           </div>
           <span style="font-size:13px;font-weight:500;">${v.name}</span>
@@ -550,10 +550,10 @@ function showToast(msg, type='success') {
   toast.style.cssText = `
     position:fixed;bottom:28px;right:28px;z-index:9999;
     padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;
-    box-shadow:0 8px 30px rgba(0,0,0,0.15);
+    box-shadow:0 8px 30px rgba(43,43,43,0.15);
     display:flex;align-items:center;gap:8px;
     animation:slideInToast 0.35s cubic-bezier(0.22,1,0.36,1) both;
-    background:${type==='success' ? '#0a1c5c' : '#c0392b'};
+    background:${type==='success' ? '#2B2B2B' : '#264078'};
     color:#fff;
   `;
   toast.innerHTML = msg;
@@ -566,12 +566,25 @@ function showToast(msg, type='success') {
   const toggleBtn   = document.getElementById('sidebarToggle');
   const sidebar     = document.getElementById('appSidebar');
   const mainContent = document.getElementById('mainContent');
+  const overlay     = document.getElementById('sidebarOverlay');
   if (toggleBtn && sidebar && mainContent) {
     toggleBtn.addEventListener('click', () => {
       sidebar.classList.toggle('collapsed');
       mainContent.classList.toggle('expanded');
+      if (overlay) {
+        const isOpen = !sidebar.classList.contains('collapsed');
+        overlay.classList.toggle('active', window.innerWidth <= 768 && isOpen);
+      }
       localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
     });
+    if (overlay) {
+      overlay.addEventListener('click', () => {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.remove('expanded');
+        overlay.classList.remove('active');
+        localStorage.setItem('sidebar_collapsed', 'true');
+      });
+    }
     if (localStorage.getItem('sidebar_collapsed') === 'true') {
       sidebar.classList.add('collapsed');
       mainContent.classList.add('expanded');

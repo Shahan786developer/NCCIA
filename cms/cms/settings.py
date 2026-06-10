@@ -10,6 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import django.db.backends.base.base as _django_base
+def _skip_check(self):
+    pass
+_django_base.BaseDatabaseWrapper.check_database_version_supported = _skip_check
+
+# MariaDB 10.4 doesn't support RETURNING; disable it
+import django.db.backends.mysql.features as _mysql_features
+_mysql_features.DatabaseFeatures.can_return_columns_from_insert = property(lambda self: False)
+_mysql_features.DatabaseFeatures.can_return_rows_from_bulk_insert = False
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -69,14 +79,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'cms.wsgi.application'
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'nccia',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
     }
 }
 
@@ -126,3 +141,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+AUTH_USER_MODEL = 'main.CustomUser'
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'

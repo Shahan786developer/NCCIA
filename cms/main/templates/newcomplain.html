@@ -76,7 +76,7 @@
   <!-- ── SECTION 1: Complainant Details ── -->
   <div class="cf-section animate-fade-up animate-delay-2" id="section1">
     <div class="cf-section-header">
-      <div class="cf-section-icon" style="background:linear-gradient(135deg,#0284c7,#7dd3fc);">
+      <div class="cf-section-icon" style="background:#2B2B2B;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
       </div>
       <div>
@@ -156,7 +156,7 @@
   <!-- ── SECTION 2: Complaint Details ── -->
   <div class="cf-section animate-fade-up animate-delay-3" id="section2">
     <div class="cf-section-header">
-      <div class="cf-section-icon" style="background:linear-gradient(135deg,#0369a1,#0284c7);">
+      <div class="cf-section-icon" style="background:#264078;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       </div>
       <div>
@@ -301,7 +301,7 @@
   <!-- ── SECTION 3: Crime Details ── -->
   <div class="cf-section animate-fade-up animate-delay-4" id="section3">
     <div class="cf-section-header">
-      <div class="cf-section-icon" style="background:linear-gradient(135deg,#c0392b,#e74c3c);">
+      <div class="cf-section-icon" style="background:#2B2B2B;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       </div>
       <div>
@@ -473,7 +473,7 @@
   <!-- ── SECTION 4: Operator Details ── -->
   <div class="cf-section animate-fade-up animate-delay-5" id="section4">
     <div class="cf-section-header">
-      <div class="cf-section-icon" style="background:linear-gradient(135deg,#475569,#64748b);">
+      <div class="cf-section-icon" style="background:#264078;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/></svg>
       </div>
       <div>
@@ -524,7 +524,7 @@
             <input type="radio" name="scrutiny_result" value="complete" required>
             <span class="cf-check-box cf-radio-box"></span>
             <div class="cf-check-content">
-              <span class="cf-check-title" style="color:#17a660;">✓ Complete</span>
+              <span class="cf-check-title" style="color:#2B2B2B;">✓ Complete</span>
               <span class="cf-check-desc">All information verified and complete</span>
             </div>
           </label>
@@ -532,7 +532,7 @@
             <input type="radio" name="scrutiny_result" value="incomplete">
             <span class="cf-check-box cf-radio-box"></span>
             <div class="cf-check-content">
-              <span class="cf-check-title" style="color:#e8a000;">⚠ Incomplete</span>
+              <span class="cf-check-title" style="color:#264078;">⚠ Incomplete</span>
               <span class="cf-check-desc">Missing information, follow-up required</span>
             </div>
           </label>
@@ -540,7 +540,7 @@
             <input type="radio" name="scrutiny_result" value="invalid">
             <span class="cf-check-box cf-radio-box"></span>
             <div class="cf-check-content">
-              <span class="cf-check-title" style="color:#c0392b;">✗ Invalid</span>
+              <span class="cf-check-title" style="color:#2B2B2B;">✗ Invalid</span>
               <span class="cf-check-desc">Does not fall within jurisdiction/scope</span>
             </div>
           </label>
@@ -548,7 +548,7 @@
             <input type="radio" name="scrutiny_result" value="irrelevant">
             <span class="cf-check-box cf-radio-box"></span>
             <div class="cf-check-content">
-              <span class="cf-check-title" style="color:#5a6e8a;">— Irrelevant</span>
+              <span class="cf-check-title" style="color:#264078;">— Irrelevant</span>
               <span class="cf-check-desc">Not a cyber crime matter</span>
             </div>
           </label>
@@ -635,7 +635,7 @@
   if (descEl && countEl) {
     descEl.addEventListener('input', function () {
       countEl.textContent = this.value.length;
-      countEl.style.color = this.value.length > 1800 ? '#c0392b' : 'var(--text-muted)';
+      countEl.style.color = this.value.length > 1800 ? '#2B2B2B' : 'var(--text-muted)';
     });
   }
 
@@ -710,10 +710,10 @@
     toast.style.cssText = `
       position:fixed;bottom:28px;right:28px;z-index:9999;
       padding:13px 22px;border-radius:10px;font-size:13px;font-weight:600;
-      box-shadow:0 8px 30px rgba(0,0,0,0.15);
+      box-shadow:0 8px 30px rgba(43,43,43,0.15);
       display:flex;align-items:center;gap:8px;
       animation:slideInToast 0.3s cubic-bezier(0.22,1,0.36,1) both;
-      background:${type === 'success' ? 'linear-gradient(135deg,#0284c7,#0369a1)' : '#c0392b'};
+      background:${type === 'success' ? '#2B2B2B' : '#264078'};
       color:#fff;
     `;
     toast.textContent = msg;
